@@ -450,10 +450,11 @@ async function saveFile(name,text,mime){var dl=null;try{if(window.claude&&claude
  showIo(text);$("ioMsg").textContent="ถ้าไฟล์ไม่ถูกดาวน์โหลด ให้คัดลอกข้อความนี้เก็บไว้ แล้ววางตอนนำเข้า"}
 $("geoAll").onclick=geoAll;
 $("exCsv").onclick=function(){saveFile("origins.csv",toCsv(),"text/csv")};
-function waitCsv(){var cur=$("heatMode").value,rows=[["name","lat","lng","mode","zone","origins","jobs_per_day","area"]];
+function waitCsv(){var cur=$("heatMode").value,rows=[["name","lat","lng","mode","zone","origins","jobs_per_day","area","location"]];
+ function row(nm,g,m,zn,a){rows.push([nm+(m==="jobs"?" (ถ่วงเที่ยววิ่ง)":" (นับต้นทาง)"),g.lat.toFixed(6),g.lng.toFixed(6),m==="jobs"?"ถ่วงเที่ยววิ่ง":"นับต้นทาง",zn,a.length,jsum(a),WA[waKey(g)]||waNear(g,a),g.lat.toFixed(6)+", "+g.lng.toFixed(6)])}
  try{["jobs","origin"].forEach(function(m){$("heatMode").value=m;
-  ZN.forEach(function(z,k){var a=pts.filter(function(p){return zoneOf(p)===k});if(!a.length)return;var g=gmed(a);
-   rows.push(["จุดรอ "+z.s+(m==="jobs"?" (ถ่วงเที่ยววิ่ง)":" (นับต้นทาง)"),g.lat.toFixed(6),g.lng.toFixed(6),m==="jobs"?"ถ่วงเที่ยววิ่ง":"นับต้นทาง",z.s,a.length,jsum(a),WA[waKey(g)]||waNear(g,a)])})})}
+  if(pts.length)row("จุดรอ ทุกโซน (รวมทั้งหมด)",gmed(pts),m,"ทุกโซน",pts);
+  ZN.forEach(function(z,k){var a=pts.filter(function(p){return zoneOf(p)===k});if(!a.length)return;row("จุดรอ "+z.s,gmed(a),m,z.s,a)})})}
  finally{$("heatMode").value=cur}
  return "\uFEFF"+rows.map(function(r){return r.map(csvCell).join(",")}).join("\r\n")}
 $("exWait").onclick=function(){saveFile("wait-points.csv",waitCsv(),"text/csv")};
