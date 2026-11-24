@@ -99,11 +99,11 @@ button.g{background:transparent;color:var(--mut);border:1px solid var(--line);pa
       </div>
       <div class="card">
         <h2>รายการต้นทาง <span id="cnt" style="color:var(--mut);font-weight:400"></span></h2>
-        <div class="row"><button class="g" id="exCsv">ส่งออก CSV</button><button class="g" id="exJson">ส่งออก JSON</button><button class="g" id="imp">นำเข้า</button><button class="g" id="geoAll" title="ค้นหาแขวง/เขต/จังหวัดจากพิกัดให้จุดที่ยังไม่มี">เติมที่อยู่อัตโนมัติ</button><input type="file" id="impFile" accept=".json,.csv,.txt" style="display:none"></div>
+        <div class="row"><button class="g" id="exCsv">ส่งออก CSV</button><button class="g" id="exJson">ส่งออก JSON</button><button class="g" id="exWait" title="จุดรอ ★ ของแต่ละโซน ทั้งแบบนับต้นทางและแบบถ่วงเที่ยว สำหรับนำเข้า Google My Maps">ส่งออกจุดรอ (My Maps)</button><button class="g" id="imp">นำเข้า</button><button class="g" id="geoAll" title="ค้นหาแขวง/เขต/จังหวัดจากพิกัดให้จุดที่ยังไม่มี">เติมที่อยู่อัตโนมัติ</button><input type="file" id="impFile" accept=".json,.csv,.txt" style="display:none"></div>
         <div class="msg" id="geoMsg" style="margin:-4px 0 8px"></div>
         <div id="io" style="display:none" class="f"><textarea id="ioText" rows="5" placeholder="วางข้อมูล JSON หรือ CSV ที่ส่งออกไว้ที่นี่ หรือเลือกไฟล์"></textarea><div class="row" style="margin:6px 0 0"><button id="ioGo">นำเข้าข้อมูลนี้</button><button class="g" id="ioFile">เลือกไฟล์</button><button class="g" id="ioClose">ปิด</button></div><div class="msg" id="ioMsg"></div></div>
         <div class="sub" id="store" style="font-size:.78rem;margin:0 0 6px"></div>
-        <details class="hot" style="margin:0 0 10px;font-size:.8rem"><summary style="cursor:pointer"><b>ดูแผนที่ถนนแบบ Google (ตรอก ซอก ซอย)</b></summary>กด “ส่งออก CSV” แล้วนำเข้าที่ <a href="https://www.google.com/maps/d/" target="_blank" rel="noopener" style="color:var(--acc)">Google My Maps</a> เลือกคอลัมน์ lat และ lng เป็นตำแหน่ง, place เป็นชื่อหมุด แล้วเลือกจัดสไตล์ตามคอลัมน์ project จะได้สีแยกตามโปรเจค ส่วนปุ่ม Street View ในแต่ละรายการเปิดดูถนนจริงรอบจุดนั้นได้เลย</details>
+        <details class="hot" style="margin:0 0 10px;font-size:.8rem"><summary style="cursor:pointer"><b>ดูแผนที่ถนนแบบ Google (ตรอก ซอก ซอย)</b></summary>กด “ส่งออก CSV” แล้วนำเข้าที่ <a href="https://www.google.com/maps/d/" target="_blank" rel="noopener" style="color:var(--acc)">Google My Maps</a> เลือกคอลัมน์ lat และ lng เป็นตำแหน่ง, place เป็นชื่อหมุด แล้วเลือกจัดสไตล์ตามคอลัมน์ project จะได้สีแยกตามโปรเจค ถ้าต้องการหมุดจุดรอ ★ ของแต่ละโซน ให้กด “ส่งออกจุดรอ (My Maps)” แล้วนำเข้าเป็นเลเยอร์ใหม่ในแผนที่เดียวกัน ส่วนปุ่ม Street View ในแต่ละรายการเปิดดูถนนจริงรอบจุดนั้นได้เลย</details>
         <div id="list"></div>
       </div>
     </div>
@@ -450,6 +450,13 @@ async function saveFile(name,text,mime){var dl=null;try{if(window.claude&&claude
  showIo(text);$("ioMsg").textContent="ถ้าไฟล์ไม่ถูกดาวน์โหลด ให้คัดลอกข้อความนี้เก็บไว้ แล้ววางตอนนำเข้า"}
 $("geoAll").onclick=geoAll;
 $("exCsv").onclick=function(){saveFile("origins.csv",toCsv(),"text/csv")};
+function waitCsv(){var cur=$("heatMode").value,rows=[["name","lat","lng","mode","zone","origins","jobs_per_day","area"]];
+ try{["jobs","origin"].forEach(function(m){$("heatMode").value=m;
+  ZN.forEach(function(z,k){var a=pts.filter(function(p){return zoneOf(p)===k});if(!a.length)return;var g=gmed(a);
+   rows.push(["จุดรอ "+z.s+(m==="jobs"?" (ถ่วงเที่ยววิ่ง)":" (นับต้นทาง)"),g.lat.toFixed(6),g.lng.toFixed(6),m==="jobs"?"ถ่วงเที่ยววิ่ง":"นับต้นทาง",z.s,a.length,jsum(a),WA[waKey(g)]||waNear(g,a)])})})}
+ finally{$("heatMode").value=cur}
+ return "\uFEFF"+rows.map(function(r){return r.map(csvCell).join(",")}).join("\r\n")}
+$("exWait").onclick=function(){saveFile("wait-points.csv",waitCsv(),"text/csv")};
 $("exJson").onclick=function(){saveFile("origins.json",toJson(),"application/json")};
 $("imp").onclick=function(){showIo(null)};
 $("ioClose").onclick=function(){$("io").style.display="none"};
