@@ -176,7 +176,8 @@ function zval(a){return a.reduce(function(s,p){return s+wOf(p)},0)}
 function jsum(a){return a.reduce(function(s,p){return s+JB(p)},0)}
 function zoneOf(p){var b=0,bd=1e18;ZN.forEach(function(z,k){var d=km(z,p);if(d<bd){bd=d;b=k}});return b}
 function zTag(p){var k=zoneOf(p),z=ZN[k];return '<span style="color:'+zoneCol(k)+'">● '+z.s+'</span> · '}
-function gmed(a){if(!a.length)return null;var y={lat:0,lng:0};a.forEach(function(p){y.lat+=p.lat/a.length;y.lng+=p.lng/a.length});for(var it=0;it<100;it++){var sw=0,la=0,ln=0;a.forEach(function(p){var w=1/Math.max(km(y,p),0.01);sw+=w;la+=w*p.lat;ln+=w*p.lng});y={lat:la/sw,lng:ln/sw}}return y}
+function gmed(a){if(!a.length)return null;var W=a.reduce(function(s,p){return s+wOf(p)},0),y={lat:0,lng:0};a.forEach(function(p){y.lat+=p.lat*wOf(p)/W;y.lng+=p.lng*wOf(p)/W});for(var it=0;it<100;it++){var sw=0,la=0,ln=0;a.forEach(function(p){var w=wOf(p)/Math.max(km(y,p),0.01);sw+=w;la+=w*p.lat;ln+=w*p.lng});y={lat:la/sw,lng:ln/sw}}return y}
+function hdesc(){return hmode()==="jobs"?"ถ่วงน้ำหนักตามเที่ยววิ่ง/วัน ต้นทางที่วิ่งเยอะดึงจุดเข้าหาตัวเอง":"นับทุกต้นทางเท่ากัน ไม่ดูจำนวนเที่ยว"}
 var HM=[[0,[59,130,246]],[.2,[34,211,238]],[.4,[34,197,94]],[.6,[250,204,21]],[.8,[249,115,22]],[1,[220,38,38]]];
 function hmCol(v){if(!(v>=.03))return null;v=Math.min(1,v);var i=1;while(i<HM.length-1&&v>HM[i][0])i++;var a=HM[i-1],b=HM[i],u=(v-a[0])/(b[0]-a[0]),c=[0,1,2].map(function(k){return Math.round(a[1][k]+(b[1][k]-a[1][k])*u)});return [c[0],c[1],c[2],Math.round(Math.min(.85,.3+v*.65)*255)]}
 function heatSvg(V,X,Y,W,H,K){
@@ -316,7 +317,7 @@ function renderList(){
  var t="";
  if(h&&pts.length){
   var V=vis().map(function(o){return o.p}),tot=h.w,top=V[0];
-  t='<b>★ จุดแนะนำรอรับงาน'+(flt?' ของ '+esc(flt):(zflt>=0?' ของ '+ZN[zflt].s:' ทุกโปรเจค'))+'</b> (กึ่งกลางของต้นทางที่แสดงอยู่): <a href="'+gm(h)+'" target="_blank" rel="noopener" style="color:var(--acc)">'+h.lat.toFixed(4)+', '+h.lng.toFixed(4)+'</a><br>'
+  t='<b>★ จุดแนะนำรอรับงาน'+(flt?' ของ '+esc(flt):(zflt>=0?' ของ '+ZN[zflt].s:' ทุกโปรเจค'))+'</b> (กึ่งกลางของต้นทางที่แสดงอยู่ · '+hdesc()+'): <a href="'+gm(h)+'" target="_blank" rel="noopener" style="color:var(--acc)">'+h.lat.toFixed(4)+', '+h.lng.toFixed(4)+'</a><br>'
    +'พื้นที่: <b data-wa="'+waKey(h)+'">'+waHtml(h,V)+'</b> · <a href="'+gmx(h,9)+'" target="_blank" rel="noopener" style="color:var(--acc)">ดูทางด่วนบน Google Maps</a><br>'
    +'รวม '+tot+' ต้นทาง · '+jsum(V)+' เที่ยว/วัน'+(flt?'':' · '+V.filter(function(p,i){return V.findIndex(function(q){return q.name===p.name})===i}).length+' โปรเจค')+'<br>'
    +(function(){var a=V.map(function(p){return {p:p,d:km(h,p)}}).sort(function(x,y){return x.d-y.d}),nm=function(o){return esc(o.p.name+(o.p.place?' / '+o.p.place.slice(0,16):''))},z=a[a.length-1];return 'ใกล้สุด: '+nm(a[0])+' ~'+a[0].d.toFixed(1)+' กม. · ไกลสุด: '+nm(z)+' ~'+z.d.toFixed(1)+' กม.'})()
@@ -335,11 +336,11 @@ function waLoad(g,a){var key=waKey(g);if(WA[key]||WA["_"+key])return;WA["_"+key]
 function distList(g,a){var s=a.map(function(p){return {p:p,d:km(g,p)}}).sort(function(x,y){return x.d-y.d});
  return s.map(function(o,i){return '<div style="display:flex;justify-content:space-between;gap:8px"><span>'+(i+1)+'. '+esc(o.p.name+(o.p.place?' / '+o.p.place.slice(0,26):''))+'</span><b style="white-space:nowrap">'+o.d.toFixed(1)+' กม.</b></div>'}).join("")}
 function renderZones(){
- var h='<b style="font-size:.95rem">สรุปโซนพื้นที่</b><div class="sub" style="font-size:.78rem;margin:2px 0 4px">★ จุดรอ = จุดที่รวมระยะไปทุกต้นทางในโซนสั้นที่สุด · กดที่โซนเพื่อกรองดูเฉพาะโซนนั้น · ระยะเป็นเส้นตรง</div>';
+ var h='<b style="font-size:.95rem">สรุปโซนพื้นที่</b><div class="sub" style="font-size:.78rem;margin:2px 0 4px">★ จุดรอ = จุดที่รวมระยะในโซนสั้นที่สุด ('+hdesc()+') · กดที่โซนเพื่อกรองดูเฉพาะโซนนั้น · ระยะเป็นเส้นตรง</div>';
  ZN.forEach(function(z,k){var a=pts.filter(function(p){return zoneOf(p)===k});if(!a.length)return;
-  var g=gmed(a),ds=a.map(function(p){return km(g,p)}),nr=a.slice().sort(function(x,y){return km(g,x)-km(g,y)})[0],mx=Math.max.apply(null,ds),av=ds.reduce(function(s,v){return s+v},0)/ds.length,nm=[];
+  var g=gmed(a),ds=a.map(function(p){return km(g,p)}),nr=a.slice().sort(function(x,y){return km(g,x)-km(g,y)})[0],mx=Math.max.apply(null,ds),av=a.reduce(function(s,p,i){return s+wOf(p)*ds[i]},0)/zval(a),nm=[];
   a.forEach(function(p){if(nm.indexOf(p.name)<0)nm.push(p.name)});
-  h+='<div class="zr'+(zflt===k?' on':'')+'" data-zk="'+k+'"><div class="gh"><i style="background:'+zoneCol(k)+'"></i><b>'+esc(z.n)+'</b><span>'+zlab(a)+'</span></div><div class="zs">โปรเจค: '+esc(nm.join(", "))+'<br>★ จุดรอ: <b data-wa="'+waKey(g)+'">'+waHtml(g,a)+'</b> · <a href="'+gm(g)+'" target="_blank" rel="noopener">'+g.lat.toFixed(4)+', '+g.lng.toFixed(4)+'</a> · <a href="'+gmx(g)+'" target="_blank" rel="noopener">ดูทางด่วนบน Google Maps</a><br>ใกล้สุด '+esc(nr.name+' / '+(nr.place||"").slice(0,28))+' ~'+km(g,nr).toFixed(1)+' กม. · ระยะเฉลี่ย '+av.toFixed(1)+' กม. · ไกลสุด '+mx.toFixed(1)+' กม.<details onclick="event.stopPropagation()" style="margin-top:3px"><summary style="cursor:pointer;color:var(--acc)">ดูระยะจากจุดรอไปทุกต้นทาง ('+a.length+')</summary><div style="margin-top:4px">'+distList(g,a)+'</div></details></div></div>';waLoad(g,a)});
+  h+='<div class="zr'+(zflt===k?' on':'')+'" data-zk="'+k+'"><div class="gh"><i style="background:'+zoneCol(k)+'"></i><b>'+esc(z.n)+'</b><span>'+zlab(a)+'</span></div><div class="zs">โปรเจค: '+esc(nm.join(", "))+'<br>★ จุดรอ: <b data-wa="'+waKey(g)+'">'+waHtml(g,a)+'</b> · <a href="'+gm(g)+'" target="_blank" rel="noopener">'+g.lat.toFixed(4)+', '+g.lng.toFixed(4)+'</a> · <a href="'+gmx(g)+'" target="_blank" rel="noopener">ดูทางด่วนบน Google Maps</a><br>ใกล้สุด '+esc(nr.name+' / '+(nr.place||"").slice(0,28))+' ~'+km(g,nr).toFixed(1)+' กม. · ระยะเฉลี่ย'+(hmode()==='jobs'?'ต่อเที่ยว ':' ')+av.toFixed(1)+' กม. · ไกลสุด '+mx.toFixed(1)+' กม.<details onclick="event.stopPropagation()" style="margin-top:3px"><summary style="cursor:pointer;color:var(--acc)">ดูระยะจากจุดรอไปทุกต้นทาง ('+a.length+')</summary><div style="margin-top:4px">'+distList(g,a)+'</div></details></div></div>';waLoad(g,a)});
  $("zsum").innerHTML=h;
  Array.prototype.forEach.call($("zsum").querySelectorAll("[data-zk]"),function(e){e.onclick=function(ev){if(ev.target.tagName==="A"||ev.target.closest("details"))return;var k=+e.getAttribute("data-zk");zflt=zflt===k?-1:k;flt="";view.k=1;view.tx=0;view.ty=0;refresh()}});
 }
